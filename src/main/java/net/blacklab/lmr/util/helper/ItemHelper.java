@@ -42,7 +42,7 @@ public class ItemHelper {
 		if (pItemstack == null)
 			return false;
 		Item li = pItemstack.getItem();
-		return (pItemstack != null && li instanceof ItemBlock && Block.getBlockFromItem(li).getMaterial(Block.getBlockFromItem(li).getDefaultState()) == Material.TNT);
+		return (pItemstack != null && li instanceof ItemBlock && Block.getBlockFromItem(li).getDefaultState().getMaterial() == Material.TNT);
 	}
 
 }

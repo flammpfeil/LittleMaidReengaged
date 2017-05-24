@@ -73,7 +73,7 @@ public class EntityAILMSwimming extends EntityAISwimming {
 					// Going ashore
 					if (pathPoint != null && Math.abs(pathPoint.yCoord - yd) < 3d && Math.pow(pathPoint.xCoord - xd, 2) + Math.pow(pathPoint.zCoord - zd, 2) < 9d &&
 							(iState = theMaid.worldObj.getBlockState(new BlockPos(pathPoint.xCoord, pathPoint.yCoord + 1, pathPoint.zCoord)))
-							.getBlock().getMaterial(iState) != Material.WATER) {
+							.getMaterial() != Material.WATER) {
 						totalmotionY += 0.05D;
 					}
 					theMaid.motionY = totalmotionY;

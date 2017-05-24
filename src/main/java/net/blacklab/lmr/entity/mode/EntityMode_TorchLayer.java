@@ -228,7 +228,7 @@ public class EntityMode_TorchLayer extends EntityModeBase {
 		}
 
 		IBlockState iState = par1World.getBlockState(new BlockPos(par2, par3, par4));
-		if (iState.getBlock().getMaterial(iState) instanceof MaterialLiquid) {
+		if (iState.getMaterial() instanceof MaterialLiquid) {
 			return false;
 		}
 
