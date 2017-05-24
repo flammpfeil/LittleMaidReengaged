@@ -70,6 +70,7 @@ import net.blacklab.lmr.util.helper.NetworkHelper;
 import net.blacklab.lmr.util.helper.OwnableEntityHelper;
 import net.blacklab.lmr.util.manager.EntityModeManager;
 import net.blacklab.lmr.util.manager.ModelManager;
+import net.minecraft.block.Block;
 import net.minecraft.block.state.IBlockState;
 import net.minecraft.client.Minecraft;
 import net.minecraft.entity.Entity;
@@ -114,6 +115,7 @@ import net.minecraft.network.play.server.SPacketRemoveEntityEffect;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.pathfinding.PathNavigate;
 import net.minecraft.pathfinding.PathNavigateGround;
+import net.minecraft.pathfinding.PathNodeType;
 import net.minecraft.potion.Potion;
 import net.minecraft.potion.PotionEffect;
 import net.minecraft.potion.PotionUtils;
@@ -129,9 +131,11 @@ import net.minecraft.util.math.BlockPos;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.math.Vec3d;
 import net.minecraft.util.text.Style;
+import net.minecraft.util.text.TextComponentString;
 import net.minecraft.util.text.TextComponentTranslation;
 import net.minecraft.util.text.TextFormatting;
 import net.minecraft.world.EnumDifficulty;
+import net.minecraft.world.GameType;
 import net.minecraft.world.GameRules;
 import net.minecraft.world.World;
 import net.minecraft.world.WorldServer;
@@ -347,7 +351,12 @@ public class EntityLittleMaid extends EntityTameable implements IModelEntity {
 				try{
 					oldGameRules = gameRules.writeToNBT();
 					gameRules.setOrCreateGameRule("spawnRadius", "0");
+
+					//through chank load fix
+                    GameType tmp = par1World.getWorldInfo().getGameType();
+                    par1World.getWorldInfo().setGameType(GameType.ADVENTURE);
 					maidAvatar = new EntityLittleMaidAvatarMP(par1World, this);
+                    par1World.getWorldInfo().setGameType(tmp);
 				}catch(Throwable throwable){
 					throwable.printStackTrace();
 					maidAvatar = null;
@@ -397,7 +406,12 @@ public class EntityLittleMaid extends EntityTameable implements IModelEntity {
 		setHealth(15F);
 
 		// 移動用フィジカル設定
-		((PathNavigateGround)navigator).setBreakDoors(true);
+		((PathNavigateGround)navigator).setEnterDoors(true);
+        //((PathNavigateGround)navigator).setBreakDoors(true);
+
+		this.setPathPriority(PathNodeType.DOOR_OPEN, 0.0f);
+		this.setPathPriority(PathNodeType.DOOR_IRON_CLOSED, -1.0f);
+		this.setPathPriority(PathNodeType.DOOR_WOOD_CLOSED, 0.0f);
 
 		// TODO:これはテスト
 //		maidStabilizer.put("HeadTop", MMM_StabilizerManager.getStabilizer("WitchHat", "HeadTop"));
@@ -425,6 +439,8 @@ public class EntityLittleMaid extends EntityTameable implements IModelEntity {
 			t = null;
 		}
 		*/
+
+		stepHeight = 1.0f;
 	}
 
 	public IEntityLittleMaidAvatar getAvatarIF()
@@ -770,7 +786,8 @@ public class EntityLittleMaid extends EntityTameable implements IModelEntity {
 		}
 
 		// モード切替に応じた処理系を確保
-		maidAvatar.stopActiveHand();
+		if(maidAvatar != null)
+			maidAvatar.stopActiveHand();
 		setSitting(false);
 		setSneaking(false);
 		setActiveModeClass(null);
@@ -956,7 +973,7 @@ public class EntityLittleMaid extends EntityTameable implements IModelEntity {
 				so = EnumSound.living_morning;
 			} else if (mstatTime < 12500) {
 				if (isContract()) {
-					Biome Biome = worldObj.getBiomeGenForCoords(getPosition());
+					Biome Biome = worldObj.getBiome(getPosition()); //getBiomeGenForCoords
 					TempCategory ltemp = Biome.getTempCategory();
 					if (ltemp == TempCategory.COLD) {
 						so = EnumSound.living_cold;
@@ -1897,8 +1914,9 @@ public class EntityLittleMaid extends EntityTameable implements IModelEntity {
 	 * 埋葬対策コピー
 	 */
 	private boolean isBlockTranslucent(int par1, int par2, int par3) {
-		IBlockState iState = worldObj.getBlockState(new BlockPos(par1, par2, par3));
-		return iState.getBlock().isNormalCube(iState);
+		BlockPos pos = new BlockPos(par1, par2, par3);
+		IBlockState iState = worldObj.getBlockState(pos);
+		return iState.getBlock().isNormalCube(iState, worldObj, pos);//.isNormalCube(iState);
 	}
 
 	/**
@@ -3387,7 +3405,7 @@ public class EntityLittleMaid extends EntityTameable implements IModelEntity {
 		ItemStack stack = null;
 		Item item = null;
 		int index = -1;
-		for(int i = 0; i < stacklist.length; i++){
+        for(int i = 0; i < stacklist.length; i++){
 			ItemStack ts = stacklist[i];
 			if (ts == null)continue;
 			Item ti = ts.getItem();
@@ -4137,4 +4155,9 @@ public class EntityLittleMaid extends EntityTameable implements IModelEntity {
 		super.setSize(par1, par2);
 	}
 
+	@Override
+	public int getVerticalFaceSpeed()
+	{
+		return 20;
+	}
 }

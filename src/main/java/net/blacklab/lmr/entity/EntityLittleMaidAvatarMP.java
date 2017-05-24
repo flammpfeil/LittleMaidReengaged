@@ -26,6 +26,7 @@ import net.minecraft.util.SoundEvent;
 import net.minecraft.util.math.MathHelper;
 import net.minecraft.util.text.ITextComponent;
 import net.minecraft.world.World;
+import net.minecraft.world.WorldServer;
 import net.minecraftforge.common.util.FakePlayer;
 import net.minecraftforge.fml.common.FMLCommonHandler;
 
@@ -46,8 +47,10 @@ public class EntityLittleMaidAvatarMP extends FakePlayer implements IEntityLittl
 
 	public EntityLittleMaidAvatarMP(World par1World)
 	{
-		super(FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(par1World == null ? 0 : par1World.provider.getDimension()),
+		super((WorldServer) par1World,//FMLCommonHandler.instance().getMinecraftServerInstance().worldServerForDimension(par1World == null ? 0 : par1World.provider.getDimension()),
 				CommonHelper.newGameProfile("1", "LMM_EntityLittleMaidAvatar"));
+
+		stepHeight = 1.0f;
 	}
 
 	public EntityLittleMaidAvatarMP(World par1World, EntityLittleMaid par2EntityLittleMaid) {
