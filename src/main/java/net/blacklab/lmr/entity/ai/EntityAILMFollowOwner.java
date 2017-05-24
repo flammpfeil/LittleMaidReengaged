@@ -2,10 +2,16 @@ package net.blacklab.lmr.entity.ai;
 
 import net.blacklab.lmr.entity.EntityLittleMaid;
 import net.blacklab.lmr.util.helper.MaidHelper;
+import net.minecraft.block.material.Material;
+import net.minecraft.block.state.IBlockState;
 import net.minecraft.entity.Entity;
 import net.minecraft.entity.ai.EntityAIBase;
 import net.minecraft.pathfinding.Path;
 import net.minecraft.pathfinding.PathNavigate;
+import net.minecraft.util.EnumFacing;
+import net.minecraft.util.math.BlockPos;
+import net.minecraft.util.math.MathHelper;
+import net.minecraft.world.World;
 
 public class EntityAILMFollowOwner extends EntityAIBase implements IEntityAILM {
 
@@ -13,7 +19,7 @@ public class EntityAILMFollowOwner extends EntityAIBase implements IEntityAILM {
 	private Entity theOwner;
 	private float moveSpeed;
 	private PathNavigate petPathfinder;
-	private int field_48310_h;
+	private int timeToRecalcPath;
 	private double maxDist;
 	private double minDist;
 	protected double sprintDist;
@@ -63,7 +69,7 @@ public class EntityAILMFollowOwner extends EntityAIBase implements IEntityAILM {
 	 * Execute a one shot task or start executing a continuous task
 	 */
 	public void startExecuting() {
-		field_48310_h = 0;
+		timeToRecalcPath = 0;
 		//lastAvoidWater = petPathfinder.getAvoidsWater();
 		//petPathfinder.setAvoidsWater(false);
 //		if(!theMaid.isInWater()) ((PathNavigateGround)this.theMaid.getNavigator()).setAvoidsWater(false);
@@ -96,14 +102,51 @@ public class EntityAILMFollowOwner extends EntityAIBase implements IEntityAILM {
 		// 指定距離以上ならダッシュ
 		if(!theMaid.isInWater()){
 			theMaid.setSprinting(toDistance > sprintDist);
-			if (--field_48310_h > 0) {
+			if (--timeToRecalcPath > 0) {
 				return;
 			}
 		}
 
-		field_48310_h = 10;
+		timeToRecalcPath = 10;
 
 		Path entity = theMaid.getNavigator().getPathToEntityLiving(theOwner);
+
+
+		if(entity != null)
+			theMaid.getNavigator().setPath(entity, this.moveSpeed);
+		else//if(!this.petPathfinder.tryMoveToEntityLiving(this.theOwner, this.moveSpeed))
+		{
+			if (!this.theMaid.getLeashed())
+			{
+				if (this.theMaid.getDistanceSqToEntity(this.theOwner) >= 144.0D)
+				{
+					int i = MathHelper.floor_double(this.theOwner.posX) - 2;
+					int j = MathHelper.floor_double(this.theOwner.posZ) - 2;
+					int k = MathHelper.floor_double(this.theOwner.getEntityBoundingBox().minY);
+
+					World theWorld = this.theMaid.worldObj;
+
+
+					for (int l = 0; l <= 4; ++l)
+					{
+						for (int i1 = 0; i1 <= 4; ++i1)
+						{
+							if (l < 1 || i1 < 1 || l > 3 || i1 > 3) {
+								BlockPos center = new BlockPos(i + l, k, j + i1);
+								if(theWorld.isSideSolid(center.down(), EnumFacing.UP) && this.isEmptyBlock(theWorld, new BlockPos(i + l, k, j + i1)) && this.isEmptyBlock(theWorld, center.up()))
+								{
+									this.theMaid.fallDistance = 0;
+									this.theMaid.setLocationAndAngles((double)((float)(i + l) + 0.5F), (double)k, (double)((float)(j + i1) + 0.5F), this.theMaid.rotationYaw, this.theMaid.rotationPitch);
+									this.petPathfinder.clearPathEntity();
+									return;
+								}
+							}
+						}
+					}
+				}
+			}
+		}
+
 		/*
 		if(entity==null){
 			if(theMaid.isInWater()&&theMaid.swimmingEnabled){
@@ -122,7 +165,7 @@ public class EntityAILMFollowOwner extends EntityAIBase implements IEntityAILM {
 			return;
 		}
 		*/
-		theMaid.getNavigator().setPath(entity, moveSpeed);
+		//theMaid.getNavigator().setPath(entity, moveSpeed);
 	}
 
 	@Override
@@ -135,4 +178,9 @@ public class EntityAILMFollowOwner extends EntityAIBase implements IEntityAILM {
 		return isEnable;
 	}
 
+	private boolean isEmptyBlock(World inWorld, BlockPos pos)
+	{
+		IBlockState iblockstate = inWorld.getBlockState(pos);
+		return iblockstate.getMaterial() == Material.AIR ? true : !iblockstate.isFullCube();
+	}
 }
