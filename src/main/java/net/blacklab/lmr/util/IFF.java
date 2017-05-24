@@ -233,11 +233,26 @@ public class IFF {
 		return getIFF(pUsername, lcname, entity.worldObj);
 	}
 
+	static public File ModConfigurationDirectory = null;
+
+	public static File getConfigurationFile(String path){
+		File file = new File(ModConfigurationDirectory, path);
+
+		/*
+		if (CommonHelper.isClient) {
+			file = new File(".", path);
+		}else{
+			file = FMLCommonHandler.instance().getMinecraftServerInstance().getFile(path);
+		}
+		*/
+		return file;
+	}
+
 	public static void loadIFFs() {
-		if (!CommonHelper.isClient) {
+//		if (!CommonHelper.isClient) {
 			// サーバー側処理
 //			loadIFF("");
-			File lfile = FMLCommonHandler.instance().getMinecraftServerInstance().getFile("config");
+			File lfile = ModConfigurationDirectory;
 			for (File lf : lfile.listFiles()) {
 				LittleMaidReengaged.Debug("FIND FILE %s", lf.getName());
 				if (lf.getName().startsWith("littleMaidMob_")&&lf.getName().endsWith(".iff")) {
@@ -246,21 +261,22 @@ public class IFF {
 					loadIFF(UUID.fromString(ls));
 				}
 			}
-		} else {
+/*		} else {
 			// クライアント側
 			loadIFF(null);
 		}
+*/
 	}
 
 	protected static File getFile(UUID pUsername) {
 		LittleMaidReengaged.Debug("GetFile.");
 		File lfile;
 		if (pUsername == null) {
-			lfile = new File(CommonHelper.mc.mcDataDir, "config/littleMaidMob.iff");
+			lfile = getConfigurationFile("littleMaidMob.iff");
 		} else {
 			String lfilename;
-			lfilename = "config/littleMaidMob_".concat(pUsername.toString()).concat(".iff");
-			lfile = FMLCommonHandler.instance().getMinecraftServerInstance().getFile(lfilename);
+			lfilename = "littleMaidMob_".concat(pUsername.toString()).concat(".iff");
+			lfile = getConfigurationFile(lfilename);
 		}
 		LittleMaidReengaged.Debug(lfile.getAbsolutePath());
 		return lfile;

@@ -159,6 +159,7 @@ public class LittleMaidReengaged {
 
 	@EventHandler
 	public void preInit(FMLPreInitializationEvent evt) {
+		IFF.ModConfigurationDirectory = evt.getModConfigurationDirectory();
 		// MMMLibからの引継ぎ
 		// ClassLoaderを初期化
 		List<URL> urls = new ArrayList<URL>();
