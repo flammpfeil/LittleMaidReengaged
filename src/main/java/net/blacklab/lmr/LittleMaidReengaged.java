@@ -58,12 +58,12 @@ import net.minecraftforge.fml.common.registry.GameRegistry;
 		name = "LittleMaidReengaged",
 		version = LittleMaidReengaged.VERSION,
 		acceptedMinecraftVersions=LittleMaidReengaged.ACCEPTED_MCVERSION,
-		dependencies = LittleMaidReengaged.DEPENDENCIES,
-		updateJSON = "http://mc.el-blacklab.net/lmr-version.json")
+        dependencies = LittleMaidReengaged.DEPENDENCIES/*,
+		updateJSON = "http://mc.el-blacklab.net/lmr-version.json"*/)
 public class LittleMaidReengaged {
 
-	public static final String DOMAIN = "lmreengaged";
-	public static final String VERSION = "8.0.4.92";
+    public static final String DOMAIN = "lmreengaged";
+    public static final String VERSION = "8.0.4.98.5";
 	public static final String ACCEPTED_MCVERSION = "[1.9.4,1.10.2]";
 	public static final int VERSION_CODE = 1;
 	public static final String DEPENDENCIES = "required-after:Forge@[1.9-12.16.0.1819,);"
